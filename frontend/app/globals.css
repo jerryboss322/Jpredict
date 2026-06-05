@@ -1,0 +1,381 @@
+/* ============================================================
+   JPREDICT — DESIGN SYSTEM
+   Aesthetic: Dark Intelligence / Editorial Analytics
+   Fonts: Bebas Neue (display) · Space Mono (data) · Outfit (body)
+   Palette: Deep navy base · Forest midtones · Amber signal · Jade result
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  /* Backgrounds — layered dark surfaces */
+  --bg-base:     #080e14;   /* deepest: page background       */
+  --bg-panel:    #0d1520;   /* panels, sidebar                */
+  --bg-card:     #111d2b;   /* cards                          */
+  --bg-raised:   #162030;   /* elevated cards, hovers         */
+  --bg-rim:      #1d2d3e;   /* input fills, subtle dividers   */
+
+  /* Borders */
+  --border-dim:   rgba(255,255,255,0.06);
+  --border-soft:  rgba(255,255,255,0.10);
+  --border-bright:rgba(255,255,255,0.18);
+
+  /* Signal colour — amber */
+  --amber:       #f5a623;
+  --amber-muted: rgba(245,166,35,0.12);
+  --amber-glow:  rgba(245,166,35,0.20);
+
+  /* Safety tier colours */
+  --ultra:  #00e5a0;   /* 95%+  Ultra Safe  */
+  --vsafe:  #22c55e;   /* 90-94 Very Safe   */
+  --safe:   #86efac;   /* 85-89 Safe        */
+  --mod:    #fbbf24;   /* 80-84 Moderate    */
+  --low:    #f87171;   /* <80   Discard     */
+
+  /* Result colours */
+  --win:   #10b981;
+  --loss:  #ef4444;
+  --void:  #64748b;
+
+  /* Typography */
+  --font-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-mono:    'Space Mono', 'Courier New', monospace;
+  --font-body:    'Outfit', 'Segoe UI', sans-serif;
+
+  /* Layout */
+  --sidebar-w: 232px;
+}
+
+/* ── Base Resets ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg-base);
+  color: rgba(255,255,255,0.87);
+  font-family: var(--font-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: var(--bg-base); }
+::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.10); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); }
+
+/* ── Selection ──────────────────────────────────────────────── */
+::selection { background: rgba(245,166,35,0.25); color: #fff; }
+
+/* ── Typography Utilities ───────────────────────────────────── */
+.font-display { font-family: var(--font-display); letter-spacing: 0.02em; }
+.font-mono    { font-family: var(--font-mono); }
+.font-body    { font-family: var(--font-body); }
+
+/* Display headings — Bebas Neue */
+.heading-xl  { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem);   line-height: 0.95; letter-spacing: 0.03em; }
+.heading-lg  { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1.0;  letter-spacing: 0.03em; }
+.heading-md  { font-family: var(--font-display); font-size: clamp(1.3rem, 2vw, 1.75rem);line-height: 1.05; letter-spacing: 0.03em; }
+.heading-sm  { font-family: var(--font-display); font-size: 1.1rem;                      line-height: 1.1;  letter-spacing: 0.05em; }
+
+/* Data labels — Space Mono */
+.label-xl  { font-family: var(--font-mono); font-size: 0.70rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.40); }
+.label-lg  { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255,255,255,0.40); }
+.label-sm  { font-family: var(--font-mono); font-size: 0.60rem; text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255,255,255,0.30); }
+
+/* ── Layout Utilities ───────────────────────────────────────── */
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-inner {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  max-width: 1280px;
+}
+
+/* ── Background / Surface Utilities ────────────────────────── */
+.bg-base    { background: var(--bg-base);   }
+.bg-panel   { background: var(--bg-panel);  }
+.bg-card    { background: var(--bg-card);   }
+.bg-raised  { background: var(--bg-raised); }
+
+/* ── Border Utilities ───────────────────────────────────────── */
+.border-dim    { border-color: var(--border-dim);    }
+.border-soft   { border-color: var(--border-soft);   }
+.border-bright { border-color: var(--border-bright); }
+
+/* ── Amber Utilities ────────────────────────────────────────── */
+.text-amber   { color: var(--amber); }
+.bg-amber     { background: var(--amber); }
+.bg-amber-muted { background: var(--amber-muted); }
+.border-amber { border-color: rgba(245,166,35,0.30); }
+
+/* ── Safety tier badge classes ──────────────────────────────── */
+.badge-ultra { background: rgba(0,229,160,0.12); color: var(--ultra); border: 1px solid rgba(0,229,160,0.25); }
+.badge-vsafe { background: rgba(34,197,94,0.10); color: var(--vsafe); border: 1px solid rgba(34,197,94,0.22); }
+.badge-safe  { background: rgba(134,239,172,0.09); color: var(--safe); border: 1px solid rgba(134,239,172,0.20); }
+.badge-mod   { background: rgba(251,191,36,0.10); color: var(--mod);   border: 1px solid rgba(251,191,36,0.22); }
+.badge-low   { background: rgba(248,113,113,0.09); color: var(--low);  border: 1px solid rgba(248,113,113,0.18); }
+
+/* ── Card atoms ─────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.card:hover        { border-color: var(--border-soft); }
+.card--raised      { background: var(--bg-raised); }
+.card--amber-rim   { border-color: rgba(245,166,35,0.25); }
+
+/* ── Section divider ────────────────────────────────────────── */
+.section-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2rem 0 1.25rem;
+}
+.section-rule::before,
+.section-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-dim);
+}
+.section-rule span {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  white-space: nowrap;
+}
+
+/* ── Confidence bar ─────────────────────────────────────────── */
+.conf-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.conf-fill {
+  height: 100%;
+  border-radius: 2px;
+  animation: barGrow 0.9s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes barGrow {
+  from { width: 0 !important; }
+  to   { /* width set inline */ }
+}
+
+/* ── Rank numerals ──────────────────────────────────────────── */
+.rank-1 { color: var(--amber); }
+.rank-2 { color: var(--ultra); }
+.rank-3 { color: rgba(255,255,255,0.50); }
+
+/* ── Stagger fade-up ────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade    { animation: fadeUp 0.45s ease both; }
+.anim-delay-1 { animation-delay: 0.06s; }
+.anim-delay-2 { animation-delay: 0.12s; }
+.anim-delay-3 { animation-delay: 0.18s; }
+.anim-delay-4 { animation-delay: 0.24s; }
+.anim-delay-5 { animation-delay: 0.30s; }
+
+/* ── Live indicator ─────────────────────────────────────────── */
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ultra);
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,229,160,0.4); }
+  50%       { opacity: 0.6; box-shadow: 0 0 0 4px rgba(0,229,160,0); }
+}
+
+/* ── Glow effects ───────────────────────────────────────────── */
+.glow-amber { box-shadow: 0 0 40px rgba(245,166,35,0.12), 0 0 80px rgba(245,166,35,0.06); }
+.glow-ultra { box-shadow: 0 0 30px rgba(0,229,160,0.14); }
+
+/* ── Horizontal rule between sections ──────────────────────── */
+hr.section-hr {
+  border: none;
+  border-top: 1px solid var(--border-dim);
+  margin: 1.5rem 0;
+}
+
+/* ── Markdown-style section headers ────────────────────────── */
+.md-h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+.md-h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 0.25rem;
+}
+.md-body {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.50);
+}
+
+/* ── Tag / pill ─────────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+/* ── Table styles ───────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+}
+.data-table thead tr {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-soft);
+}
+.data-table thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  font-weight: 400;
+}
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border-dim);
+  transition: background 120ms;
+}
+.data-table tbody tr:hover { background: var(--bg-raised); }
+.data-table tbody td { padding: 12px 16px; color: rgba(255,255,255,0.80); }
+
+/* ── Sidebar nav link states ────────────────────────────────── */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.45);
+  transition: all 140ms ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.nav-link:hover {
+  color: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.04);
+}
+.nav-link.active {
+  color: var(--amber);
+  background: rgba(245,166,35,0.09);
+  border-color: rgba(245,166,35,0.18);
+}
+.nav-link .nav-icon { color: inherit; opacity: 0.7; flex-shrink: 0; }
+.nav-link.active .nav-icon { opacity: 1; }
+
+/* ── Input / Select ─────────────────────────────────────────── */
+.input-base {
+  background: var(--bg-rim);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.80);
+  outline: none;
+  transition: border-color 140ms;
+}
+.input-base:focus { border-color: rgba(245,166,35,0.45); }
+
+/* ── Button ─────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--amber);
+  color: #080e14;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 140ms, transform 120ms;
+}
+.btn-primary:hover    { opacity: 0.88; }
+.btn-primary:active   { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 140ms;
+}
+.btn-ghost:hover { color: rgba(255,255,255,0.85); border-color: var(--border-bright); background: rgba(255,255,255,0.04); }
+
+/* ── Stat number ────────────────────────────────────────────── */
+.stat-number {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
