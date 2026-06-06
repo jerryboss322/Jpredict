@@ -3,8 +3,8 @@
 // Uses an in-memory cache to respect the 50 req/min free tier limit.
 // Inspects X-Requests-Available-Minute header as Daniel recommended.
 
-import type { TeamStats, H2HStats, LeagueBaseline } from './predictionEngine'
-import { LEAGUE_DEFAULTS } from './predictionEngine'
+import type { TeamStats, H2HStats, LeagueBaseline } from '@/lib/predictionEngine'
+import { LEAGUE_DEFAULTS } from '@/lib/predictionEngine'
 
 const BASE = 'https://api.football-data.org/v4'
 
