@@ -1,13 +1,12 @@
 // app/api/admin/auth/route.ts
-// Simple password-based auth for the admin panel.
-// Set ADMIN_PASSWORD env var in Vercel (default fallback is "jpredict-admin").
-// Returns a signed session token stored client-side in sessionStorage.
+// Password validation endpoint for the admin panel.
+// Password is set via ADMIN_PASSWORD env var (default: "jpredict-admin").
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
+import { addToken } from '@/lib/adminAuth'
 
-// In-memory token store (cleared on serverless cold start — acceptable for admin)
-const VALID_TOKENS = new Set<string>()
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000 // 8 hours
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,28 +23,17 @@ export async function POST(req: NextRequest) {
     const provided  = createHash('sha256').update(password).digest('hex')
 
     if (expected !== provided) {
-      // Add a small artificial delay to slow brute-force attempts
-      await sleep(500)
+      await sleep(500) // slow brute-force attempts
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
-    // Issue a random session token
     const token = randomBytes(32).toString('hex')
-    VALID_TOKENS.add(token)
-
-    // Auto-expire token after 8 hours
-    setTimeout(() => VALID_TOKENS.delete(token), 8 * 60 * 60 * 1000)
+    addToken(token, SESSION_TTL_MS)
 
     return NextResponse.json({ token, expiresIn: '8h' })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
-}
-
-// Exported for other admin routes to verify tokens
-export function isValidToken(token: string | null): boolean {
-  if (!token) return false
-  return VALID_TOKENS.has(token)
 }
 
 function sleep(ms: number) {
