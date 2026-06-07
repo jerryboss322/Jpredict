@@ -1,6 +1,6 @@
 // app/api/admin/auth/route.ts
-// Password validation endpoint for the admin panel.
-// Password is set via ADMIN_PASSWORD env var (default: "jpredict-admin").
+// Only exports POST — Next.js treats every named export as an HTTP handler,
+// so addToken / isValidToken live in lib/adminAuth.ts instead.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
@@ -18,12 +18,12 @@ export async function POST(req: NextRequest) {
 
     const adminPassword = process.env.ADMIN_PASSWORD ?? 'jpredict-admin'
 
-    // Constant-time comparison to prevent timing attacks
+    // SHA-256 both sides so we do a constant-length comparison regardless
     const expected = createHash('sha256').update(adminPassword).digest('hex')
     const provided  = createHash('sha256').update(password).digest('hex')
 
     if (expected !== provided) {
-      await sleep(500) // slow brute-force attempts
+      await new Promise(r => setTimeout(r, 500)) // slow brute-force attempts
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
@@ -34,8 +34,4 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
-}
-
-function sleep(ms: number) {
-  return new Promise(r => setTimeout(r, ms))
 }
