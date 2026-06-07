@@ -2,11 +2,12 @@
 import { NextResponse } from 'next/server'
 import { getConfig } from '@/lib/config'
 import { checkApiFootballStatus } from '@/lib/apiFootball'
+import { checkOddsApiStatus } from '@/lib/oddsApi'
 
 export async function GET() {
   const cfg = getConfig()
 
-  // Test football-data.org
+  // ── football-data.org ─────────────────────────────────────────────────────
   let fdoStatus = 'not_configured'
   let fdoFixturesToday = 0
   let fdoError = ''
@@ -32,25 +33,36 @@ export async function GET() {
     }
   }
 
-  // Test API-Football
+  // ── API-Football ──────────────────────────────────────────────────────────
   const afStatus = cfg.apiFootballKey
     ? await checkApiFootballStatus(cfg.apiFootballKey)
+    : { connected: false, requestsRemaining: null, error: 'not_configured' }
+
+  // ── odds-api.io ───────────────────────────────────────────────────────────
+  const oddsStatus = cfg.oddsApiKey
+    ? await checkOddsApiStatus(cfg.oddsApiKey)
     : { connected: false, requestsRemaining: null, error: 'not_configured' }
 
   return NextResponse.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     footballDataOrg: {
-      apiKey:       cfg.apiKey ? `***${cfg.apiKey.slice(-4)}` : 'NOT SET ❌',
-      status:       fdoStatus,
+      apiKey:          cfg.apiKey ? `***${cfg.apiKey.slice(-4)}` : 'NOT SET',
+      status:          fdoStatus,
       plFixturesToday: fdoFixturesToday,
-      error:        fdoError || null,
+      error:           fdoError || null,
     },
     apiFootball: {
-      apiKey:            cfg.apiFootballKey ? `***${cfg.apiFootballKey.slice(-4)}` : 'NOT SET ❌',
+      apiKey:            cfg.apiFootballKey ? `***${cfg.apiFootballKey.slice(-4)}` : 'NOT SET',
       connected:         afStatus.connected,
       requestsRemaining: afStatus.requestsRemaining,
       error:             afStatus.error,
+    },
+    oddsApi: {
+      apiKey:            cfg.oddsApiKey ? `***${cfg.oddsApiKey.slice(-4)}` : 'NOT SET',
+      connected:         oddsStatus.connected,
+      requestsRemaining: oddsStatus.requestsRemaining,
+      error:             oddsStatus.error,
     },
     config: {
       minConfidence:  cfg.minConfidence,

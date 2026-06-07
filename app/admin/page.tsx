@@ -1,7 +1,9 @@
 'use client'
-// app/admin/page.tsx — Admin Panel
+// app/admin/page.tsx — Admin Panel (password-protected)
+// Redirects to /admin/login if no valid session token is found.
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { fetchPredictions, triggerFixtureRefresh } from '@/lib/api'
 
 const MOCK_JOBS = [
@@ -31,19 +33,37 @@ const JOB_STYLE: Record<string, string> = {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
+  const [authed, setAuthed]           = useState<boolean | null>(null) // null = checking
   const [processing, setProcessing]   = useState(false)
   const [processMsg, setProcessMsg]   = useState('')
   const [grading, setGrading]         = useState(false)
   const [gradingMsg, setGradingMsg]   = useState('')
 
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const token = sessionStorage.getItem('admin_token')
+    if (!token) {
+      router.replace('/admin/login')
+    } else {
+      setAuthed(true)
+    }
+  }, [router])
+
+  function handleLogout() {
+    sessionStorage.removeItem('admin_token')
+    router.replace('/admin/login')
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────────
   async function handleProcessNow() {
     setProcessing(true)
     setProcessMsg('')
     try {
       await triggerFixtureRefresh()
-      setProcessMsg('✓ Daily processing triggered. Fixtures will be synced and analyzed.')
+      setProcessMsg('Daily processing triggered. Fixtures will be synced and analyzed.')
     } catch {
-      setProcessMsg('✗ Failed to trigger processing. Is the backend running?')
+      setProcessMsg('Failed to trigger processing. Check API keys in Vercel settings.')
     }
     setProcessing(false)
   }
@@ -52,8 +72,17 @@ export default function AdminPage() {
     setGrading(true)
     setGradingMsg('')
     await new Promise(r => setTimeout(r, 1200))
-    setGradingMsg('✓ Grading complete. 12 predictions updated.')
+    setGradingMsg('Grading complete. 12 predictions updated.')
     setGrading(false)
+  }
+
+  // ── Loading / redirect state ───────────────────────────────────────────────
+  if (authed === null) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="label-sm">Verifying session…</p>
+      </div>
+    )
   }
 
   const apiUsagePct = Math.round((MOCK_STATS.apiCallsToday / MOCK_STATS.apiCallsLimit) * 100)
@@ -63,12 +92,21 @@ export default function AdminPage() {
     <div className="space-y-8 max-w-[1200px]">
 
       {/* ── Header ── */}
-      <header className="anim-fade">
-        <p className="label-xl mb-1">System Management</p>
-        <h1 className="md-h2">ADMIN <span style={{ color: 'var(--amber)' }}>PANEL</span></h1>
-        <p className="md-body mt-1">
-          Manage the prediction engine, trigger processing jobs, grade results, and monitor API usage.
-        </p>
+      <header className="anim-fade flex items-start justify-between gap-4">
+        <div>
+          <p className="label-xl mb-1">System Management</p>
+          <h1 className="md-h2">ADMIN <span style={{ color: 'var(--amber)' }}>PANEL</span></h1>
+          <p className="md-body mt-1">
+            Manage the prediction engine, trigger processing jobs, grade results, and monitor API usage.
+          </p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="btn-ghost shrink-0 mt-1"
+          style={{ fontSize: '0.75rem' }}
+        >
+          Sign out
+        </button>
       </header>
 
       {/* ── Platform overview ── */}
@@ -113,21 +151,19 @@ export default function AdminPage() {
       <section className="anim-fade anim-delay-2">
         <div className="section-rule"><span>## Processing Controls</span></div>
         <div className="grid sm:grid-cols-2 gap-4">
-
-          {/* Trigger processing */}
           <div className="card p-5 space-y-4">
             <div>
               <h3 className="heading-sm" style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>
                 Run Daily Processing
               </h3>
               <p className="md-body text-xs mt-1">
-                Fetches today&apos;s fixtures from football-data.org, syncs team stats, runs the
+                Fetches today&apos;s fixtures from all configured APIs, syncs team stats, runs the
                 prediction engine on every match, and publishes results above the confidence threshold.
               </p>
             </div>
             <div className="space-y-2 text-xs font-mono">
               <p style={{ color: 'rgba(255,255,255,0.40)' }}>Pipeline steps:</p>
-              {['1. Fixture sync', '2. Standings fetch', '3. Team stats sync', '4. Engine analysis', '5. Auto-publish'].map(s => (
+              {['1. Fixture sync (all 3 sources)', '2. Standings fetch', '3. Team stats sync', '4. Engine analysis', '5. Auto-publish'].map(s => (
                 <p key={s} style={{ color: 'rgba(255,255,255,0.55)' }}>→ {s}</p>
               ))}
             </div>
@@ -144,9 +180,9 @@ export default function AdminPage() {
               <p
                 className="font-mono text-xs p-3 rounded-lg border"
                 style={{
-                  background:   processMsg.startsWith('✓') ? 'rgba(0,229,160,0.06)' : 'rgba(248,113,113,0.06)',
-                  borderColor:  processMsg.startsWith('✓') ? 'rgba(0,229,160,0.25)' : 'rgba(248,113,113,0.25)',
-                  color:        processMsg.startsWith('✓') ? 'var(--ultra)' : 'var(--loss)',
+                  background:  processMsg.startsWith('Failed') ? 'rgba(248,113,113,0.06)' : 'rgba(0,229,160,0.06)',
+                  borderColor: processMsg.startsWith('Failed') ? 'rgba(248,113,113,0.25)' : 'rgba(0,229,160,0.25)',
+                  color:       processMsg.startsWith('Failed') ? 'var(--loss)' : 'var(--ultra)',
                 }}
               >
                 {processMsg}
@@ -154,7 +190,6 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* Grade results */}
           <div className="card p-5 space-y-4">
             <div>
               <h3 className="heading-sm" style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>
@@ -239,37 +274,32 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="card p-5">
-            <p className="label-lg">Free Tier Notes</p>
-            <ul className="space-y-1 mt-2">
+            <p className="label-lg">API Sources</p>
+            <ul className="space-y-2 mt-2">
               {[
-                '50 req/min maximum',
-                'Current season only',
-                '9 competitions covered',
-                'No corners/cards data',
-              ].map(note => (
-                <li key={note} className="flex items-center gap-1.5">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--mod)" strokeWidth="2.5">
-                    <path d="M12 9v4M12 17h.01" strokeLinecap="round"/>
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <span className="label-lg" style={{ textTransform: 'none', letterSpacing: 0, fontSize: '0.73rem' }}>
-                    {note}
-                  </span>
+                { name: 'football-data.org', desc: 'Domestic + UCL/UEL' },
+                { name: 'API-Football',      desc: 'Internationals + friendlies' },
+                { name: 'odds-api.io',       desc: 'All leagues + odds' },
+              ].map(({ name, desc }) => (
+                <li key={name} className="flex flex-col gap-0.5">
+                  <span className="font-mono text-xs" style={{ color: 'var(--amber)' }}>{name}</span>
+                  <span className="label-sm" style={{ textTransform: 'none', fontSize: '0.68rem' }}>{desc}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="card p-5">
-            <p className="label-lg">Data Sync Times</p>
+            <p className="label-lg">Data Cache TTLs</p>
             <div className="space-y-2 mt-2">
               {[
-                { label: 'Fixtures',   ttl: '15 min cache' },
-                { label: 'Standings',  ttl: '60 min cache' },
-                { label: 'Team stats', ttl: '30 min cache' },
-                { label: 'H2H data',   ttl: '60 min cache' },
+                { label: 'Fixtures',   ttl: '15 min' },
+                { label: 'Standings',  ttl: '60 min' },
+                { label: 'Team stats', ttl: '30 min' },
+                { label: 'H2H data',   ttl: '60 min' },
+                { label: 'Odds',       ttl: '15 min' },
               ].map(({ label, ttl }) => (
                 <div key={label} className="flex justify-between">
-                  <span className="label-lg" style={{ textTransform: 'none', letterSpacing: 0, fontSize: '0.73rem', color: 'rgba(255,255,255,0.55)' }}>
+                  <span className="label-sm" style={{ textTransform: 'none', letterSpacing: 0, fontSize: '0.73rem', color: 'rgba(255,255,255,0.55)' }}>
                     {label}
                   </span>
                   <span className="font-mono text-xs" style={{ color: 'var(--amber)' }}>{ttl}</span>

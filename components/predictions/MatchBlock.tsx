@@ -1,7 +1,24 @@
 // components/predictions/MatchBlock.tsx
 import { PredictionCard } from './PredictionCard'
 
-interface MatchPrediction { fixture: any; predictions: any[]; riskLevel: string; status: string }
+interface Odds {
+  homeWin:   number | null
+  draw:      number | null
+  awayWin:   number | null
+  over25:    number | null
+  under25:   number | null
+  bttsYes:   number | null
+  bttsNo:    number | null
+  bookmaker: string | null
+}
+
+interface MatchPrediction {
+  fixture:     any
+  predictions: any[]
+  riskLevel:   string
+  status:      string
+  odds?:       Odds | null
+}
 
 const RISK_STYLE: Record<string, string> = {
   'Ultra Safe': 'badge-ultra',
@@ -13,8 +30,74 @@ const RISK_STYLE: Record<string, string> = {
   'Recommended':'badge-vsafe',
 }
 
+function OddsRow({ odds, homeTeam, awayTeam }: { odds: Odds; homeTeam: string; awayTeam: string }) {
+  const fmt = (v: number | null) => v != null ? v.toFixed(2) : '—'
+  const hasAny = odds.homeWin || odds.draw || odds.awayWin || odds.over25 || odds.bttsYes
+
+  if (!hasAny) return null
+
+  return (
+    <div
+      className="px-5 pb-4"
+    >
+      <div className="section-rule"><span>Bookmaker Odds{odds.bookmaker ? ` · ${odds.bookmaker}` : ''}</span></div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+        {/* 1X2 */}
+        {(odds.homeWin || odds.draw || odds.awayWin) && (
+          <div
+            className="rounded p-3 text-center space-y-1"
+            style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-dim)' }}
+          >
+            <p className="label-sm" style={{ fontSize: '0.6rem' }}>1X2</p>
+            <div className="flex justify-between gap-1 text-xs font-mono">
+              <span style={{ color: 'var(--amber)' }}>{fmt(odds.homeWin)}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>{fmt(odds.draw)}</span>
+              <span style={{ color: 'var(--ultra)' }}>{fmt(odds.awayWin)}</span>
+            </div>
+            <div className="flex justify-between gap-1" style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.35)' }}>
+              <span>1</span><span>X</span><span>2</span>
+            </div>
+          </div>
+        )}
+        {/* Over/Under */}
+        {(odds.over25 || odds.under25) && (
+          <div
+            className="rounded p-3 text-center space-y-1"
+            style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-dim)' }}
+          >
+            <p className="label-sm" style={{ fontSize: '0.6rem' }}>Over/Under 2.5</p>
+            <div className="flex justify-between gap-1 text-xs font-mono">
+              <span style={{ color: 'var(--vsafe)' }}>{fmt(odds.over25)}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>{fmt(odds.under25)}</span>
+            </div>
+            <div className="flex justify-between gap-1" style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.35)' }}>
+              <span>Over</span><span>Under</span>
+            </div>
+          </div>
+        )}
+        {/* BTTS */}
+        {(odds.bttsYes || odds.bttsNo) && (
+          <div
+            className="rounded p-3 text-center space-y-1"
+            style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-dim)' }}
+          >
+            <p className="label-sm" style={{ fontSize: '0.6rem' }}>BTTS</p>
+            <div className="flex justify-between gap-1 text-xs font-mono">
+              <span style={{ color: 'var(--vsafe)' }}>{fmt(odds.bttsYes)}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>{fmt(odds.bttsNo)}</span>
+            </div>
+            <div className="flex justify-between gap-1" style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.35)' }}>
+              <span>Yes</span><span>No</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function MatchBlock({ match, index = 0 }: { match: MatchPrediction; index?: number }) {
-  const { fixture, predictions, riskLevel, status } = match
+  const { fixture, predictions, riskLevel, status, odds } = match
   const dt = new Date(fixture.utcDate)
 
   return (
@@ -52,12 +135,11 @@ export function MatchBlock({ match, index = 0 }: { match: MatchPrediction; index
         </div>
       </div>
 
-      {/* ── Section rule ── */}
+      {/* ── Predictions ── */}
       <div className="px-5">
         <div className="section-rule"><span>Top 3 Safest Predictions</span></div>
       </div>
 
-      {/* ── Predictions grid ── */}
       <div className="px-5 pb-5 grid sm:grid-cols-3 gap-3">
         {predictions.map((p: any, i: number) => (
           <PredictionCard
@@ -70,6 +152,9 @@ export function MatchBlock({ match, index = 0 }: { match: MatchPrediction; index
           />
         ))}
       </div>
+
+      {/* ── Bookmaker odds (if available) ── */}
+      {odds && <OddsRow odds={odds} homeTeam={fixture.homeTeam} awayTeam={fixture.awayTeam} />}
     </section>
   )
 }
